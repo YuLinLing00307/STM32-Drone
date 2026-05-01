@@ -1187,6 +1187,16 @@
               <FileType>5</FileType>
               <FilePath>..\Drivers\APP\App_Receive_Data.h</FilePath>
             </File>
+            <File>
+              <FileName>App_Flight.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\APP\App_Flight.c</FilePath>
+            </File>
+            <File>
+              <FileName>App_Flight.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Drivers\APP\App_Flight.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1261,6 +1271,16 @@
               <FileName>Com_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Drivers\BSP\common\Com_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>Com_Filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Drivers\BSP\common\Com_Filter.c</FilePath>
+            </File>
+            <File>
+              <FileName>Com_Filter.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Drivers\BSP\common\Com_Filter.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -30,5 +30,9 @@ extern LED_Struct led_right_top;
 extern LED_Struct led_right_bottom;
 extern LED_Struct led_left_bottom;
 
+/*************陀螺仪相关结构体******************/
+extern Gyro_Accel_struct gyro_accel_data;
+extern Euler_struct      euler_angle_data;
+
 
 #endif  //

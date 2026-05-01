@@ -40,4 +40,33 @@ typedef struct
     uint8_t fix_height; // 1:切换定高和不定高 
 }Remote_Data;
 
+// 陀螺仪结构体定义
+typedef struct
+{
+    float gyro_x;   // 向右飞转动为正,表示横滚角
+    float gyro_y;   // 向前飞转动为正,表示俯仰角
+    float gyro_z;   // 从上往下看逆时针旋转为正,表示偏航角
+}Gyro_struct; // 角速度
+
+typedef struct
+{
+    float accel_x;  // 向前的加速度为正
+    float accel_y;  // 向左的加速度为正
+    float accel_z;  // 向上的加速度为正
+}Accel_struct; // 加速度
+
+typedef struct
+{
+    Gyro_struct gyro;
+    Accel_struct accel;
+}Gyro_Accel_struct;
+
+// 解算得到的欧拉角
+typedef struct
+{
+    int16_t yaw;
+    int16_t pitch;
+    int16_t roll;
+}Euler_struct;
+
 #endif //

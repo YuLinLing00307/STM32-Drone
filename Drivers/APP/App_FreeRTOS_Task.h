@@ -7,6 +7,7 @@
 
 // APP层
 #include "App_Receive_Data.h"
+#include "App_Flight.h"
 
 // BSP层
 #include "Com_debug.h"
@@ -17,6 +18,7 @@
 #include "Int_motor.h"
 #include "Int_led.h"
 #include "Int_SI24R1.h"
+#include "Int_mpu6050.h"
 
 
 void App_FreeRTOS_Start(void);

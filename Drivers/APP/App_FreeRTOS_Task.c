@@ -100,11 +100,11 @@ void Flight_Task(void* args)
     // 获取当前基准时间
     TickType_t pxPreviousWakeTime = xTaskGetTickCount();
 
+    Int_MPU6050_Init(); // 对MPU6050进行初始化,然后才能进行数据的读取
+
     while(1)
     {
-        // 1. 设置电机转速
-
-        // 2. 直接启动电机
+        App_Flight_Get_Euler_Angle();
 
         vTaskDelayUntil(&pxPreviousWakeTime,Flight_Task_PERIOD);
     }

@@ -56,5 +56,7 @@ LED_Struct led_left_bottom = {
     .pin  = LED4_Pin,
 };
 
-
+/*************陀螺仪相关结构体******************/
+Gyro_Accel_struct gyro_accel_data = {0};
+Euler_struct      euler_angle_data = {0};
 
