@@ -64,9 +64,9 @@ typedef struct
 // 解算得到的欧拉角
 typedef struct
 {
-    int16_t yaw;
-    int16_t pitch;
-    int16_t roll;
+    float yaw;
+    float pitch;
+    float roll;
 }Euler_struct;
 
 #endif //

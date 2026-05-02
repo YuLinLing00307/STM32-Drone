@@ -2,6 +2,8 @@
 
 void Int_Motor_Start(Motor_struct* motor)
 {   
+    motor->value_ccr = 0;
+    Int_Motor_Set_Speed(motor);
     HAL_TIM_PWM_Start(motor->p_htim,motor->channel);
 }
 

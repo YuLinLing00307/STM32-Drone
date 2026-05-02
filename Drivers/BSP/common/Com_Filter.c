@@ -22,7 +22,7 @@ float Common_Filter_LowPass(float newValue, float preFilteredValue)
 
 /* 卡尔曼滤波参数 */
 KalmanFilter_Struct kfs[3] = {
-    {0.02, 0, 0, 0, 0.001, 0.543},
+    {0.02, 0, 0, 0, 0.001, 0.543}, // 每个轴需要有一个单独的卡尔曼滤波结构体
     {0.02, 0, 0, 0, 0.001, 0.543},
     {0.02, 0, 0, 0, 0.001, 0.543}
 };
@@ -38,3 +38,4 @@ double Common_Filter_KalmanFilter(KalmanFilter_Struct *kf, double input) {
 
     return kf->out;
 }
+

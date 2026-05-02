@@ -100,11 +100,18 @@ void Flight_Task(void* args)
     // 获取当前基准时间
     TickType_t pxPreviousWakeTime = xTaskGetTickCount();
 
-    Int_MPU6050_Init(); // 对MPU6050进行初始化,然后才能进行数据的读取
+    App_Flight_Init(); // 对MPU6050和电机进行初始化
 
     while(1)
     {
+        // 1.获取当前的欧拉角
         App_Flight_Get_Euler_Angle();
+
+        // 2.根据欧拉角进行pid计算
+        App_Flight_PID_Process();
+
+        // 3.根据pid的结果对电机进行控制
+        App_Flight_Control_Motor();
 
         vTaskDelayUntil(&pxPreviousWakeTime,Flight_Task_PERIOD);
     }
