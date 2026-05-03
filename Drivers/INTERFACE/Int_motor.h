@@ -8,7 +8,7 @@ typedef struct
 {
     TIM_HandleTypeDef* p_htim;
     uint32_t           channel;
-    uint16_t           value_ccr;
+    int16_t           value_ccr;
 }Motor_struct;
 
 void Int_Motor_Start(Motor_struct* motor);

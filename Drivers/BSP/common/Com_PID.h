@@ -1,6 +1,8 @@
 #ifndef __COM_PID_H
 #define __COM_PID_H
 
+#define PID_Calc_PERIOD 0.006f
+
 //定义pid结构体
 typedef struct
 {

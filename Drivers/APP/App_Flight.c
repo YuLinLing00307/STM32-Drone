@@ -5,16 +5,46 @@ Gyro_struct gyro_last_data = {0}; // 用于低通滤波的结构体
 // 各个角的PID结构体
 PID_Struct Pitch_PID = 
 {
-    .kp         = 1.0,
+    .kp         = -7.0,
     .ki         = 0,
     .kd         = 0,
     .ref        = 0,
 };
 PID_Struct Pitch_Gyro_PID = 
 {
-    .kp         = 1.0,  // 调参先调内环
+    .kp         = 3.0,  // 调参先调内环
+    .ki         = 0,
+    .kd         = 0.5,
+    .ref        = 0,
+};
+
+PID_Struct Roll_PID = 
+{
+    .kp         = -7.0,
     .ki         = 0,
     .kd         = 0,
+    .ref        = 0, 
+};
+PID_Struct Roll_Gyro_PID = 
+{
+    .kp         = 3.0,  // 调参先调内环
+    .ki         = 0,
+    .kd         = 0.5,
+    .ref        = 0,
+};
+
+PID_Struct Yaw_PID = 
+{
+    .kp         = -3.0,
+    .ki         = 0,
+    .kd         = 0,
+    .ref        = 0,
+};
+PID_Struct Yaw_Gyro_PID = 
+{
+    .kp         = -5.0,  // 调参先调内环
+    .ki         = 0,
+    .kd         = 0.0,
     .ref        = 0,
 };
 
@@ -61,6 +91,18 @@ void App_Flight_PID_Process(void)
     Pitch_PID.fdb       = euler_angle_data.pitch;
     Pitch_Gyro_PID.fdb  = (gyro_accel_data.gyro.gyro_y / 32768.0f * 2000.0f);
     Com_PID_Calc_Chain(&Pitch_Gyro_PID,&Pitch_PID);
+
+    // 横滚角
+    Roll_PID.ref       = (float)(remote_data.roll - 500) / 500.0f * 10.0f; // 遥控器范围是0-1000,归化到-10~10。其实不应该在这里去赋值ref,单独开一个函数,根据状态机去设置ref,代码耦合性会降低，这里只做fdb赋值就行了。
+    Roll_PID.fdb       = euler_angle_data.roll;
+    Roll_Gyro_PID.fdb  = (gyro_accel_data.gyro.gyro_x / 32768.0f * 2000.0f);
+    Com_PID_Calc_Chain(&Roll_Gyro_PID,&Roll_PID);
+
+    // 偏航角
+    Yaw_PID.ref       = (float)(remote_data.yaw - 500) / 500.0f * 10.0f; // 遥控器范围是0-1000,归化到-10~10。其实不应该在这里去赋值ref,单独开一个函数,根据状态机去设置ref,代码耦合性会降低，这里只做fdb赋值就行了。
+    Yaw_PID.fdb       = euler_angle_data.yaw;
+    Yaw_Gyro_PID.fdb  = (gyro_accel_data.gyro.gyro_z / 32768.0f * 2000.0f);
+    Com_PID_Calc_Chain(&Yaw_Gyro_PID,&Yaw_PID);
 }
 
 // 文件内容
@@ -78,11 +120,11 @@ void App_Flight_Control_Motor(void)
             break;
         }
         case NORMAL_STATE:
-        {   // 俯仰角ref为0时，向前飞，outuput是个负值,此时我需要前面两个电机快一点,后面两个电机慢一点
-            left_top_motor.value_ccr        = remote_data.thr - Pitch_Gyro_PID.output;
-            left_bottom_motor.value_ccr     = remote_data.thr + Pitch_Gyro_PID.output;
-            right_top_motor.value_ccr       = remote_data.thr - Pitch_Gyro_PID.output;
-            right_bottom_motor.value_ccr    = remote_data.thr + Pitch_Gyro_PID.output;
+        {   // 俯仰角ref为0时，向前飞，outuput是个负值,此时我需要前面两个电机快一点,后面两个电机慢一点.因此前两个电机接受的output极性相同。另外两个轴同理
+            left_top_motor.value_ccr        = remote_data.thr - Pitch_Gyro_PID.output + Roll_Gyro_PID.output + Com_Limit(Yaw_Gyro_PID.output,100,-100);
+            left_bottom_motor.value_ccr     = remote_data.thr + Pitch_Gyro_PID.output + Roll_Gyro_PID.output - Com_Limit(Yaw_Gyro_PID.output,100,-100);
+            right_top_motor.value_ccr       = remote_data.thr - Pitch_Gyro_PID.output - Roll_Gyro_PID.output - Com_Limit(Yaw_Gyro_PID.output,100,-100);
+            right_bottom_motor.value_ccr    = remote_data.thr + Pitch_Gyro_PID.output - Roll_Gyro_PID.output + Com_Limit(Yaw_Gyro_PID.output,100,-100);
             break;
         }
         case FIX_HEIGHT_STATE:
@@ -111,6 +153,15 @@ void App_Flight_Control_Motor(void)
     left_bottom_motor.value_ccr = Com_Limit(left_bottom_motor.value_ccr,600,0);
     right_top_motor.value_ccr = Com_Limit(right_top_motor.value_ccr,600,0);
     right_bottom_motor.value_ccr = Com_Limit(right_bottom_motor.value_ccr,600,0);
+
+    // 安全限制 -> 油门小于50时，速度设置为0
+    if(remote_data.thr < 50)
+    {
+        left_top_motor.value_ccr = 0;
+        left_bottom_motor.value_ccr = 0;
+        right_top_motor.value_ccr = 0;
+        right_bottom_motor.value_ccr = 0;
+    }
 
     Int_Motor_Set_Speed(&left_top_motor);
     Int_Motor_Set_Speed(&left_bottom_motor);

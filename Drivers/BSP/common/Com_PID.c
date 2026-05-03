@@ -9,7 +9,7 @@ void Com_PID_Calc(PID_Struct* pid)
     pid->err_last = pid->err;
 
     // 2.计算pid输出
-    pid->output = pid->kp * pid->err + pid->ki * pid->err_sum + pid->kd * err_diff;
+    pid->output = pid->kp * pid->err + pid->ki * pid->err_sum * PID_Calc_PERIOD + pid->kd * (err_diff / PID_Calc_PERIOD);
 }
 
 
