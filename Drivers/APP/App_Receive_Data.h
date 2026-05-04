@@ -8,6 +8,9 @@
 #include "Com_config.h"
 
 #include "Int_SI24R1.h"
+#include "Int_VL53L1X.h"
+
+#include "App_Flight.h"
 
 // 宏定义帧头
 #define FRAME_HEAD_CHECK_1 's'

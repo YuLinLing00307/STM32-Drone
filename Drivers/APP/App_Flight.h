@@ -6,18 +6,24 @@
 #include "task.h"
 #include "math.h"
 
+#include "App_FreeRTOS_Task.h"
+
 #include "global.h"
 
 #include "Int_mpu6050.h"
-#include "Com_PID.h"
+#include "Int_VL53L1X.h"
 
+#include "Com_PID.h"
 #include "Com_debug.h"
 #include "Com_Filter.h"
 #include "Com_IMU.h"
+
+extern uint16_t fix_height;
 
 void App_Flight_Init(void);
 void App_Flight_Get_Euler_Angle(void); // 获取欧拉角
 void App_Flight_Control_Motor(void);
 void App_Flight_PID_Process(void);
+void App_Flight_Fix_Height_PID_Process(void);
 
 #endif // __APP_FLIGHT_H__

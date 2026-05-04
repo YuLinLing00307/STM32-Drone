@@ -48,13 +48,29 @@ PID_Struct Yaw_Gyro_PID =
     .ref        = 0,
 };
 
+PID_Struct Fix_Height_PID =
+{
+    .kp         = 0.6,
+    .ki         = 0,
+    .kd         = 0.3,
+    .ref        = 0,
+};
+
+// 定高高度
+uint16_t fix_height = 0;
+
 void App_Flight_Init(void)
 {
     Int_MPU6050_Init();
+    
+    // 启动电机
     Int_Motor_Start(&left_top_motor);
     Int_Motor_Start(&right_top_motor);
     Int_Motor_Start(&left_bottom_motor);
     Int_Motor_Start(&right_bottom_motor);
+
+    // 初始化激光测距仪
+    Int_VL53L1X_Init();
 }
 void App_Flight_Get_Euler_Angle(void)
 {
@@ -105,6 +121,30 @@ void App_Flight_PID_Process(void)
     Com_PID_Calc_Chain(&Yaw_Gyro_PID,&Yaw_PID);
 }
 
+void App_Flight_Fix_Height_PID_Process(void)
+{
+    // 24ms一次
+    // 1. 只有在定高模式下才进行高度PID计算
+    if (flight_state != FIX_HEIGHT_STATE)
+        return;
+
+    // 2. 获取高度测量值并进行有效性检查
+    uint16_t current_distance = Int_VL53L1X_GetDistance();
+    // VL53L1X无效测量返回65535(0xFFFF)，需过滤
+    if (current_distance == 0 || current_distance > 4000)
+        return;
+
+    // 3. 填写目标值和测量值(目标值是进入定高模式时的当前高度,测量值是当前高度)
+    Fix_Height_PID.ref = (float)fix_height;
+    Fix_Height_PID.fdb = (float)current_distance;
+
+    // 4. 进行单环PID计算，得到输出值
+    Com_PID_Calc(&Fix_Height_PID);
+
+    // 5. 限幅保护，防止输出过大影响电机控制
+    Fix_Height_PID.output = Com_Limit(Fix_Height_PID.output, 200, -200);
+}
+
 // 文件内容
 void App_Flight_Control_Motor(void)
 {
@@ -129,18 +169,24 @@ void App_Flight_Control_Motor(void)
         }
         case FIX_HEIGHT_STATE:
         {
-            left_top_motor.value_ccr        = 0;
-            left_bottom_motor.value_ccr     = 0;
-            right_top_motor.value_ccr       = 0;
-            right_bottom_motor.value_ccr    = 0;
+            left_top_motor.value_ccr        = remote_data.thr - Pitch_Gyro_PID.output + Roll_Gyro_PID.output + Com_Limit(Yaw_Gyro_PID.output,100,-100) + Fix_Height_PID.output;
+            left_bottom_motor.value_ccr     = remote_data.thr + Pitch_Gyro_PID.output + Roll_Gyro_PID.output - Com_Limit(Yaw_Gyro_PID.output,100,-100) + Fix_Height_PID.output;
+            right_top_motor.value_ccr       = remote_data.thr - Pitch_Gyro_PID.output - Roll_Gyro_PID.output - Com_Limit(Yaw_Gyro_PID.output,100,-100) + Fix_Height_PID.output;
+            right_bottom_motor.value_ccr    = remote_data.thr + Pitch_Gyro_PID.output - Roll_Gyro_PID.output + Com_Limit(Yaw_Gyro_PID.output,100,-100) + Fix_Height_PID.output;
             break;
         }
         case FAIL_STATE:
         {
-            left_top_motor.value_ccr        = 0;
-            left_bottom_motor.value_ccr     = 0;
-            right_top_motor.value_ccr       = 0;
-            right_bottom_motor.value_ccr    = 0;
+            // 进行故障处理,处理完毕后用任务通知机制唤醒状态机切换任务
+            left_top_motor.value_ccr        -= 3;
+            left_bottom_motor.value_ccr     -= 3;
+            right_top_motor.value_ccr       -= 3;
+            right_bottom_motor.value_ccr    -= 3;
+            if(left_top_motor.value_ccr <= 0 && left_bottom_motor.value_ccr <= 0 && right_top_motor.value_ccr <= 0 && right_bottom_motor.value_ccr <= 0)
+            {
+                // 故障处理完成，唤醒状态机切换任务
+                xTaskNotifyGive(Communication_Task_handle);
+            }
             break;
         }
         default:

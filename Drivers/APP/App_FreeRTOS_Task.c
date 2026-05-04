@@ -99,6 +99,7 @@ void Flight_Task(void* args)
 {
     // 获取当前基准时间
     TickType_t pxPreviousWakeTime = xTaskGetTickCount();
+    uint8_t count = 0;
 
     App_Flight_Init(); // 对MPU6050和电机进行初始化
 
@@ -110,7 +111,19 @@ void Flight_Task(void* args)
         // 2.根据欧拉角进行pid计算
         App_Flight_PID_Process();
 
-        // 3.根据pid的结果对电机进行控制
+        // 3. 判断定高
+        if(flight_state == FIX_HEIGHT_STATE)
+        {
+            // 激光测距仪的20ms反馈一次
+            count++;
+            if(count >= 4) // 4个6ms周期进行一次计算
+            {
+                App_Flight_Fix_Height_PID_Process();
+                count = 0;
+            }
+        }
+
+        // 4.根据pid的结果对电机进行控制
         App_Flight_Control_Motor();
 
         vTaskDelayUntil(&pxPreviousWakeTime,Flight_Task_PERIOD);

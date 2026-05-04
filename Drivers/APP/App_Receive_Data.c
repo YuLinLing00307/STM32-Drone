@@ -146,6 +146,9 @@ void App_Receive_Process_Flight_State(void)
             {
                 flight_state = FIX_HEIGHT_STATE;
                 remote_data.fix_height = 0; // 使用一次后把fix_height置为0,避免重复切换。实际上并不是置1就为定高模式，采用的是收到1则在定高和非定高之间切换的逻辑
+
+                // 在此处进入定高模式，记录定高高度
+                fix_height  = Int_VL53L1X_GetDistance();
             }
             else if(remote_state == REMOTE_DISCONNECTED)
             {
@@ -164,12 +167,11 @@ void App_Receive_Process_Flight_State(void)
             }
             break;
         case FAIL_STATE:
-            // TODO: 处理失联故障，缓慢停止电机
-            vTaskDelay(1);
-            // 停止完毕后，退回空闲状态
+            // 倘若进入FAIL_STATE,采用任务通知机制,等待处理完毕后再返回IDLE_STATE
+            ulTaskNotifyTake(pdTRUE,portMAX_DELAY);    
+
             flight_state = IDLE_STATE;
             thr_state    = FREE_STATE;
-
             break;
         default:
             break;

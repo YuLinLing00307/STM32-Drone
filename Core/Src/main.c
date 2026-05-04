@@ -98,6 +98,7 @@ int main(void)
   MX_TIM4_Init();
   MX_SPI1_Init();
   MX_I2C1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
   // 启动任务调度器以启动FreeRTOS

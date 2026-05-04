@@ -19,7 +19,9 @@
 #include "Int_led.h"
 #include "Int_SI24R1.h"
 #include "Int_mpu6050.h"
+#include "Int_VL53L1X.h"
 
+extern TaskHandle_t Communication_Task_handle;
 
 void App_FreeRTOS_Start(void);
 
