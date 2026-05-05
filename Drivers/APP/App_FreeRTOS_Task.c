@@ -26,7 +26,7 @@ TaskHandle_t LED_Task_handle;
 // 通信任务
 void Communication_Task(void* args);
 #define Communication_Task_STACK_SIZE               128 // 最小推荐填写128 -> 128*4 = 512Byte
-#define Communication_Task_PRIORITY                 2 // 任务优先级 -> 数值越大优先级越高
+#define Communication_Task_PRIORITY                 4 // 任务优先级 -> 数值越大优先级越高
 #define Communication_Task_PERIOD                   6 // 任务执行周期
 TaskHandle_t Communication_Task_handle;
 
@@ -194,9 +194,14 @@ void Communication_Task(void* args)
 {
     // 获取当前基准时间
     TickType_t pxPreviousWakeTime = xTaskGetTickCount();
+    // 初始化电池电压ADC
+    Int_BAT_ADC_Init();
 
     while(1)
     {
+        // 准备回传电池电压的值
+        voltage = Int_BAT_ADC_Read();
+
         uint8_t ret = App_Receive_Data();       // 接收数据
         App_Receive_Process_Remote_State(ret);  // 处理遥控器连接状态
 
@@ -211,6 +216,6 @@ void Communication_Task(void* args)
         App_Receive_Process_Flight_State(); 
 
         // 每6ms执行一次 接收数据的时间间隔应该等于发送数据的时间间隔
-        vTaskDelayUntil(&pxPreviousWakeTime,Communication_Task_PERIOD);
+        vTaskDelay(Communication_Task_PERIOD);
     }
 }

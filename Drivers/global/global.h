@@ -34,5 +34,6 @@ extern LED_Struct led_left_bottom;
 extern Gyro_Accel_struct gyro_accel_data;
 extern Euler_struct      euler_angle_data;
 
+extern float voltage;
 
 #endif  //

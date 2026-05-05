@@ -67,4 +67,5 @@ LED_Struct led_left_bottom = {
 /*************陀螺仪相关结构体******************/
 Gyro_Accel_struct gyro_accel_data = {0};
 Euler_struct      euler_angle_data = {0};
-
+/*************电池电压******************/
+float voltage = 0;

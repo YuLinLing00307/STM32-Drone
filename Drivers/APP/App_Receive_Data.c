@@ -4,7 +4,7 @@ uint8_t receive_buf[TX_PLOAD_WIDTH] = {0}; // 接收缓冲区
 uint8_t error_count = 0; // 错误次数,用于判断是否断开连接
 TickType_t max_enter_time = 0; // 进入MAX状态的时间
 TickType_t min_enter_time = 0; // 进入MIN状态的时间
-
+uint8_t back_buff[TX_PLOAD_WIDTH] = {0};
 
 /*
  * @brief: 处理解锁函数,用于状态机判断是否切换状态
@@ -84,7 +84,26 @@ uint8_t App_Receive_Data(void)
     memset(receive_buf,0,sizeof(receive_buf));
     uint8_t ret = Int_SI24R1_RxPacket(receive_buf); // 如果为0则接收到了收据
     if(ret == 1)
+    {
         return 1;
+    }
+    else
+    {
+        // 飞机收到遥控数据,切换模式准备回传电池数据
+        // 1.进入发送模式
+        Int_SI24R1_TX_Mode();
+        sprintf(back_buff,"%.2f",voltage);
+        uint8_t count = 500;
+        while(Int_SI24R1_TxPacket(back_buff) == 1)
+        {
+            count--;
+            if(count == 0)
+            {
+                break;
+            }
+        }
+        Int_SI24R1_RX_Mode();
+    }
 
     // 进行数据解析
     // 首先进行帧头校验
